@@ -1,10 +1,10 @@
 {
 	"uuid": "65eac49d-b926-47ba-b233-4a83fbd0b231",
-	"shortName": "Analog Chronograph",
-	"longName": "Analog Chronograph",
+	"shortName": "Pilot Watch",
+	"longName": "Pilot Watch",
 	"companyName": "Darren Embry",
-	"versionCode": 3,
-	"versionLabel": "0.2",
+	"versionCode": 4,
+	"versionLabel": "1.0",
 	"watchapp": {
 		"watchface": false
 	},
