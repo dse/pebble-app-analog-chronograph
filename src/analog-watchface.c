@@ -10,6 +10,8 @@ static Layer *s_ticks_layer;
 static Layer *s_wall_time_layer;
 static Layer *s_stopwatch_layer;
 
+static AppTimer *timer_handle = NULL;
+
 static const GPathInfo MINUTE_HAND_POINTS = {
   4,
   (GPoint []) {
@@ -32,10 +34,10 @@ static const GPathInfo HOUR_HAND_POINTS = {
 
 static GPath *s_minute_arrow, *s_hour_arrow;
 
-static GRect bounds;
+static GRect  bounds;
 static GPoint center;
 static GPoint center1, center2, center3;
-static int radius1;
+static int    radius1, radius2, radius3;
 
 GPoint tick_point (GPoint center, int radius, int degrees) {
   int angle = (int)(TRIG_MAX_ANGLE * degrees / 360.0 + 0.5);
@@ -66,8 +68,8 @@ void draw_ticks (GContext *ctx, GPoint center, int radius, int num_ticks, int ti
 void ticks_update_proc(Layer *layer, GContext *ctx) {
   draw_ticks(ctx, center, TICK_RADIUS, 60, 5, 1);
   draw_ticks(ctx, center1, radius1, 20, 4, 1);
-  draw_ticks(ctx, center2, radius1, 60, 5, 0);
-  draw_ticks(ctx, center3, radius1, 60, 5, 0);
+  draw_ticks(ctx, center2, radius2, 60, 5, 0);
+  draw_ticks(ctx, center3, radius3, 60, 5, 0);
 }
 
 void canvas_update_proc(Layer *layer, GContext *ctx) {
@@ -98,10 +100,14 @@ void stopwatch_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_stroke_color(ctx, GColorWhite);
   graphics_context_set_fill_color(ctx, GColorWhite);
 
-  GPoint pt_msec   = tick_point(center1, radius1 - 4, 360.0 * t.msec / 1000);
-  GPoint pt_second = tick_point(center2, radius1 - 4, t.sec % 60 * 6);
-  GPoint pt_minute = tick_point(center3, radius1 - 4, (int)(t.sec % 3600  / 10.0  + 0.5));
-  GPoint pt_hour   = tick_point(center3, (int)((radius1 - 4.0) * 2.0 / 3.0 + 0.5), (int)(t.sec % 43200 / 120.0 + 0.5));
+  GPoint pt_msec   = tick_point(center1, radius1 - 4,
+				360.0 * t.msec / 1000);
+  GPoint pt_second = tick_point(center2, radius2 - 4,
+				t.sec % 60 * 6);
+  GPoint pt_minute = tick_point(center3, radius3 - 4,
+				(int)((t.sec / 60) % 60  * 6.0 + 0.5));
+  GPoint pt_hour   = tick_point(center3, (int)((radius3 - 4.0) * 2.0 / 3.0 + 0.5),
+				(int)((t.sec / 60) % 720 * 0.5 + 0.5));
 
   graphics_draw_line(ctx, center1, pt_msec);
   graphics_draw_line(ctx, center2, pt_second);
@@ -113,16 +119,23 @@ void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   layer_mark_dirty(s_wall_time_layer);
 }
 
+void update_stopwatch() {
+  timer_handle = app_timer_register(50, (AppTimerCallback) update_stopwatch, NULL);
+  layer_mark_dirty(s_stopwatch_layer);
+}
+
 void main_window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
 
   bounds = layer_get_bounds(window_layer);
   center = grect_center_point(&bounds);
 
-  center1 = tick_point(center, TICK_RADIUS / 2,   0);
-  center2 = tick_point(center, TICK_RADIUS / 2, 120);
-  center3 = tick_point(center, TICK_RADIUS / 2, 240);
-  radius1 = (int)(TICK_RADIUS / 2.5 + 0.5);
+  center1 = tick_point(center, (int)(TICK_RADIUS * 0.65 + 0.5),   0);
+  center2 = tick_point(center, (int)(TICK_RADIUS * 0.5 + 0.5),  90);
+  center3 = tick_point(center, (int)(TICK_RADIUS * 0.5 + 0.5), 270);
+  radius1 = 20;
+  radius2 = 30;
+  radius3 = 30;
 
   window_set_background_color(window, GColorBlack);
 
@@ -142,19 +155,16 @@ void main_window_load(Window *window) {
   layer_mark_dirty(s_stopwatch_layer);
 
   tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
+
+  if (stopwatch_load_persist()) {
+    timer_handle = app_timer_register(50, (AppTimerCallback) update_stopwatch, NULL);
+  }
 }
 
 void main_window_unload(Window *window) {
   // Destroy Layer
   layer_destroy(s_wall_time_layer);
   layer_destroy(s_stopwatch_layer);
-}
-
-static AppTimer *timer_handle = NULL;
-
-void update_stopwatch() {
-  timer_handle = app_timer_register(50, (AppTimerCallback) update_stopwatch, NULL);
-  layer_mark_dirty(s_stopwatch_layer);
 }
 
 void up_single_click_handler(ClickRecognizerRef recognizer, void *context) {

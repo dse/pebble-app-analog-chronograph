@@ -17,4 +17,7 @@ TimeWithMsec stopwatch_time();
 int stopwatch_lap_reset();
 int stopwatch_start_stop();
 
+int stopwatch_load_persist();
+void stopwatch_save_persist();
+
 #endif /* ANALOG_WATCHFACE_H */
