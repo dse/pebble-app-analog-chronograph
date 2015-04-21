@@ -67,7 +67,7 @@ void draw_ticks (GContext *ctx, GPoint center, int radius, int num_ticks, int ti
 
 void ticks_update_proc(Layer *layer, GContext *ctx) {
   draw_ticks(ctx, center, TICK_RADIUS, 60, 5, 1);
-  draw_ticks(ctx, center1, radius1, 20, 4, 1);
+  draw_ticks(ctx, center1, radius1, 20, 2, 1);
   draw_ticks(ctx, center2, radius2, 60, 5, 0);
   draw_ticks(ctx, center3, radius3, 60, 5, 0);
 }
@@ -79,8 +79,8 @@ void canvas_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_stroke_color(ctx, GColorWhite);
   graphics_context_set_fill_color(ctx, GColorWhite);
   
-  GPoint second = tick_point(center, SECOND_RADIUS, t->tm_sec * 6);
-  graphics_draw_line(ctx, center, second);
+  GPoint second = tick_point(center2, radius2 - 4, t->tm_sec * 6);
+  graphics_draw_line(ctx, center2, second);
 
   int minute_angle = (int)(TRIG_MAX_ANGLE / 3600.0  * (                         t->tm_min * 60 + t->tm_sec) + 0.5);
   int hour_angle   = (int)(TRIG_MAX_ANGLE / 43200.0 * (t->tm_hour % 12 * 3600 + t->tm_min * 60 + t->tm_sec) + 0.5);
@@ -100,17 +100,15 @@ void stopwatch_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_stroke_color(ctx, GColorWhite);
   graphics_context_set_fill_color(ctx, GColorWhite);
 
-  GPoint pt_msec   = tick_point(center1, radius1 - 4,
-				360.0 * t.msec / 1000);
-  GPoint pt_second = tick_point(center2, radius2 - 4,
-				t.sec % 60 * 6);
+  GPoint pt_msec   = tick_point(center1, radius1 - 4, 360.0 * t.msec / 1000);
+  GPoint pt_second = tick_point(center, TICK_RADIUS - 4, t.sec % 60 * 6);
   GPoint pt_minute = tick_point(center3, radius3 - 4,
 				(int)((t.sec / 60) % 60  * 6.0 + 0.5));
   GPoint pt_hour   = tick_point(center3, (int)((radius3 - 4.0) * 2.0 / 3.0 + 0.5),
 				(int)((t.sec / 60) % 720 * 0.5 + 0.5));
 
   graphics_draw_line(ctx, center1, pt_msec);
-  graphics_draw_line(ctx, center2, pt_second);
+  graphics_draw_line(ctx, center, pt_second);
   graphics_draw_line(ctx, center3, pt_minute);
   graphics_draw_line(ctx, center3, pt_hour);
 }
@@ -130,11 +128,11 @@ void main_window_load(Window *window) {
   bounds = layer_get_bounds(window_layer);
   center = grect_center_point(&bounds);
 
-  center1 = tick_point(center, (int)(TICK_RADIUS * 0.65 + 0.5),   0);
-  center2 = tick_point(center, (int)(TICK_RADIUS * 0.5 + 0.5),  90);
-  center3 = tick_point(center, (int)(TICK_RADIUS * 0.5 + 0.5), 270);
+  center1 = tick_point(center, (int)(TICK_RADIUS * 0.6 + 0.5),   0);
+  center2 = tick_point(center, (int)(TICK_RADIUS * 0.5 + 0.5), 285);
+  center3 = tick_point(center, (int)(TICK_RADIUS * 0.5 + 0.5), 180);
   radius1 = 20;
-  radius2 = 30;
+  radius2 = 20;
   radius3 = 30;
 
   window_set_background_color(window, GColorBlack);
