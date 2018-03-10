@@ -24,6 +24,10 @@ static GRect  bounds;           /* relative to window */
 static GRect  inner_bounds;     /* relative to inner layers */
 static GPoint center;           /* relative to inner layers */
 
+/* stopwatch complications */
+/* 1 = chronograph 1/10s of a second */
+/* 2 = time of day seconds (big hand seconds is for the chronograph) */
+/* 3 = chronograph minute/hour */
 static GPoint center1, center2, center3;
 static int    radius1, radius2, radius3;
 
@@ -35,6 +39,7 @@ typedef struct DressWatchSettings {
     bool show_battery;
     bool use_bold_font;
     bool use_larger_font;
+    bool chronograph_big_second_hand;
 } DressWatchSettings;
 
 static DressWatchSettings settings;
@@ -85,15 +90,25 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
     int minute_angle = (int)(TRIG_MAX_ANGLE / 3600.0  * (                         t->tm_min * 60 + t->tm_sec) + 0.5);
     int hour_angle   = (int)(TRIG_MAX_ANGLE / 43200.0 * (t->tm_hour % 12 * 3600 + t->tm_min * 60 + t->tm_sec) + 0.5);
 
-    GPoint second = tick_angle_point(center, SECOND_RADIUS, second_angle);
-    GPoint minute = tick_angle_point(center, MINUTE_RADIUS, minute_angle);
-    GPoint hour   = tick_angle_point(center, HOUR_RADIUS,   hour_angle);
+    GPoint second, minute, hour;
+
+    if (settings.chronograph_big_second_hand) {
+        second = tick_angle_point(center2, radius2 - 4, second_angle);
+    } else {
+        second = tick_angle_point(center, SECOND_RADIUS - 4, second_angle);
+    }
+    minute = tick_angle_point(center, MINUTE_RADIUS, minute_angle);
+    hour   = tick_angle_point(center, HOUR_RADIUS,   hour_angle);
 
     graphics_context_set_stroke_color(ctx, GColorWhite);
     graphics_context_set_fill_color(ctx, GColorWhite);
   
     graphics_context_set_stroke_width(ctx, 1);
-    graphics_draw_line(ctx, center, second);
+    if (settings.chronograph_big_second_hand) {
+        graphics_draw_line(ctx, center2, second);
+    } else {
+        graphics_draw_line(ctx, center, second);
+    }
 
     graphics_context_set_stroke_width(ctx, 3);
     graphics_draw_line(ctx, center, minute);
@@ -111,20 +126,28 @@ static void update_date(struct tm *tick_time) {
 
 void stopwatch_update_proc(Layer *layer, GContext *ctx) {
     TimeWithMsec t = stopwatch_time();
+
+    GPoint pt_msec, pt_second, pt_minute, pt_hour;
   
     graphics_context_set_stroke_color(ctx, GColorWhite);
     graphics_context_set_fill_color(ctx, GColorWhite);
 
-    GPoint pt_msec   = tick_point(center1, radius1 - 4, 360.0 * t.msec / 1000);
-    GPoint pt_second = tick_point(center, TICK_RADIUS - 4, t.sec % 60 * 6);
-    GPoint pt_minute = tick_point(center3, radius3 - 4,
-                                  (int)((t.sec / 60) % 60  * 6.0 + 0.5));
-    GPoint pt_hour   = tick_point(center3, (int)((radius3 - 4.0) * 2.0 / 3.0 + 0.5),
-                                  (int)((t.sec / 60) % 720 * 0.5 + 0.5));
+    pt_msec   = tick_point(center1, radius1 - 4, 360.0 * t.msec / 1000);
+    if (settings.chronograph_big_second_hand) {
+        pt_second = tick_point(center, SECOND_RADIUS - 4, t.sec % 60 * 6);
+    } else {
+        pt_second = tick_point(center2, radius2 - 4, t.sec % 60 * 6);
+    }
+    pt_minute = tick_point(center3, radius3 - 4, (int)((t.sec / 60) % 60  * 6.0 + 0.5));
+    pt_hour   = tick_point(center3, (int)((radius3 - 4.0) * 2.0 / 3.0 + 0.5), (int)((t.sec / 60) % 720 * 0.5 + 0.5));
 
     graphics_context_set_stroke_width(ctx, 1);
     graphics_draw_line(ctx, center1, pt_msec);
-    graphics_draw_line(ctx, center, pt_second);
+    if (settings.chronograph_big_second_hand) {
+        graphics_draw_line(ctx, center, pt_second);
+    } else {
+        graphics_draw_line(ctx, center2, pt_second);
+    }
     graphics_draw_line(ctx, center3, pt_minute);
     graphics_draw_line(ctx, center3, pt_hour);
 }
@@ -194,6 +217,7 @@ static void main_window_load(Window *window) {
     settings.show_battery = 0;
     settings.use_bold_font = 0;
     settings.use_larger_font = 0;
+    settings.chronograph_big_second_hand = 1;
 
     persist_read_data(SETTINGS_KEY, &settings, sizeof(settings));
 
