@@ -6,3 +6,6 @@ build
 wscript.backup
 
 node_modules/
+
+# Commit the pbw.
+!build/watchapp-pilot-watch.pbw
