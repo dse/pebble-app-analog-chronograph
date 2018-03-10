@@ -20,8 +20,9 @@ static int minute_when_last_updated;
 
 static AppTimer *timer_handle = NULL;
 
-static GRect  bounds;
-static GPoint center;
+static GRect  bounds;           /* relative to window */
+static GRect  inner_bounds;     /* relative to inner layers */
+static GPoint center;           /* relative to inner layers */
 
 static GPoint center1, center2, center3;
 static int    radius1, radius2, radius3;
@@ -206,21 +207,23 @@ static void main_window_load(Window *window) {
     } else {
         bounds.origin.y += 14;
     }
-    bounds.size.h   -= 28;
-    center = grect_center_point(&bounds);
-
-    center1 = tick_point(center, (int)(TICK_RADIUS * 0.6 + 0.5),   0);
-    center2 = tick_point(center, (int)(TICK_RADIUS * 0.5 + 0.5), 285);
-    center3 = tick_point(center, (int)(TICK_RADIUS * 0.5 + 0.5), 180);
-    radius1 = 20;
-    radius2 = 20;
-    radius3 = 30;
+    bounds.size.h -= 28;
 
     window_set_background_color(window, GColorBlack);
 
     s_ticks_layer = layer_create(bounds);
     layer_set_update_proc(s_ticks_layer, ticks_update_proc);
     layer_add_child(window_layer, s_ticks_layer);
+
+    inner_bounds = layer_get_bounds(s_ticks_layer);
+
+    center = grect_center_point(&inner_bounds);
+    center1 = tick_point(center, (int)(TICK_RADIUS * 0.6 + 0.5),   0);
+    center2 = tick_point(center, (int)(TICK_RADIUS * 0.5 + 0.5), 285);
+    center3 = tick_point(center, (int)(TICK_RADIUS * 0.5 + 0.5), 180);
+    radius1 = 20;
+    radius2 = 20;
+    radius3 = 30;
 
     s_wall_time_layer = layer_create(bounds);
     layer_set_update_proc(s_wall_time_layer, canvas_update_proc);
@@ -260,9 +263,6 @@ static void main_window_load(Window *window) {
         text_layer_set_text_alignment(s_batt_text_layer, GTextAlignmentRight);
         layer_add_child(window_layer, text_layer_get_layer(s_batt_text_layer));
     }
-
-    bounds = layer_get_bounds(s_ticks_layer);
-    center = grect_center_point(&bounds);
 
     minute_when_last_updated = -1;
 
