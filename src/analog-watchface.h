@@ -1,12 +1,10 @@
 #ifndef ANALOG_WATCHFACE_H
 #define ANALOG_WATCHFACE_H
 
-#define TICK_RADIUS       68
-#define SECOND_RADIUS     64
-#define MINUTE_RADIUS     56
-#define HOUR_RADIUS       36
-#define MINUTE_HAND_WIDTH 2
-#define HOUR_HAND_WIDTH   2
+static void main_window_create();
+static void main_window_destroy();
+static void main_window_load(Window *window);
+static void main_window_unload(Window *window);
 
 typedef struct TimeWithMsec {
   time_t sec;
@@ -20,4 +18,4 @@ int stopwatch_start_stop();
 int stopwatch_load_persist();
 void stopwatch_save_persist();
 
-#endif /* ANALOG_WATCHFACE_H */
+#endif

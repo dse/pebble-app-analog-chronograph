@@ -1,8 +1,9 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "Darren Embry",
-  "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "pebble-clay": "^1.0.4"
+  },
   "keywords": [
     "pebble-app"
   ],
@@ -13,21 +14,24 @@
     },
     "projectType": "native",
     "uuid": "71d75f4c-4499-4545-b33f-130cb073b271",
-    "messageKeys": {
-      "dummy": 0
-    },
-    "enableMultiJS": false,
+    "messageKeys": [
+      "ShowDate",
+      "ShowBattery",
+      "UseBoldFont",
+      "UseLargerFont"
+    ],
+    "enableMultiJS": true,
     "displayName": "Pilot Watch",
     "watchapp": {
-      "onlyShownOnCommunication": false,
-      "hiddenApp": false,
       "watchface": false
     },
     "targetPlatforms": [
       "aplite",
       "basalt"
     ],
-    "capabilities": []
+    "capabilities": [
+      "configurable"
+    ]
   },
   "name": "Pilot Watch"
 }
