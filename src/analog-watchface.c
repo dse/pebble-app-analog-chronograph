@@ -95,7 +95,7 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
     if (settings.chronograph_big_second_hand) {
         second = tick_angle_point(center2, radius2 - 4, second_angle);
     } else {
-        second = tick_angle_point(center, SECOND_RADIUS - 4, second_angle);
+        second = tick_angle_point(center, SECOND_RADIUS, second_angle);
     }
     minute = tick_angle_point(center, MINUTE_RADIUS, minute_angle);
     hour   = tick_angle_point(center, HOUR_RADIUS,   hour_angle);
