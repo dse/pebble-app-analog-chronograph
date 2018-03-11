@@ -178,10 +178,11 @@ static void on_battery_state_change(BatteryChargeState charge) {
 
 static void message_handler(DictionaryIterator *received, void *context) {
     bool refresh_window = 0;
-    Tuple *tuple_show_date         = dict_find(received, MESSAGE_KEY_ShowDate);
-    Tuple *tuple_show_battery      = dict_find(received, MESSAGE_KEY_ShowBattery);
-    Tuple *tuple_use_bold_font     = dict_find(received, MESSAGE_KEY_UseBoldFont);
-    Tuple *tuple_use_larger_font   = dict_find(received, MESSAGE_KEY_UseLargerFont);
+    Tuple *tuple_show_date                   = dict_find(received, MESSAGE_KEY_ShowDate);
+    Tuple *tuple_show_battery                = dict_find(received, MESSAGE_KEY_ShowBattery);
+    Tuple *tuple_use_bold_font               = dict_find(received, MESSAGE_KEY_UseBoldFont);
+    Tuple *tuple_use_larger_font             = dict_find(received, MESSAGE_KEY_UseLargerFont);
+    Tuple *tuple_chronograph_big_second_hand = dict_find(received, MESSAGE_KEY_ChronographBigSecondHand);
 
     if (tuple_show_date) {
         refresh_window = 1;
@@ -198,6 +199,10 @@ static void message_handler(DictionaryIterator *received, void *context) {
     if (tuple_use_larger_font) {
         refresh_window = 1;
         settings.use_larger_font = (bool)tuple_use_larger_font->value->int32;
+    }
+    if (tuple_chronograph_big_second_hand) {
+        refresh_window = 1;
+        settings.chronograph_big_second_hand = (bool)tuple_chronograph_big_second_hand->value->int32;
     }
 
     persist_write_data(SETTINGS_KEY, &settings, sizeof(settings));
