@@ -7,9 +7,9 @@ static void main_window_load(Window *window);
 static void main_window_unload(Window *window);
 
 typedef struct TimeWithMsec {
-  time_t sec;
-  uint16_t msec;
-} TimeWithMsec ;
+    time_t sec;
+    uint16_t msec;
+} TimeWithMsec;
 
 TimeWithMsec stopwatch_time();
 int stopwatch_lap_reset();
