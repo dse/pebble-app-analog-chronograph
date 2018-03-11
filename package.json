@@ -19,7 +19,7 @@
       "ShowBattery",
       "UseBoldFont",
       "UseLargerFont",
-      "ChronographBigSecondHand"
+      "StopwatchUsesBigSecondHand"
     ],
     "enableMultiJS": true,
     "displayName": "Pilot Watch",

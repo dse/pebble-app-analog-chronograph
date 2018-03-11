@@ -10,6 +10,6 @@ module.exports = [
             { type: "toggle", messageKey: "UseLargerFont", label: "Use Larger Font", defaultValue: false }
         ]
     },
-    { type: "toggle", messageKey: "ChronographBigSecondHand", label: "Chronograph Has Big Second Hand", defaultValue: true },
+    { type: "toggle", messageKey: "StopwatchUsesBigSecondHand", label: "Stopwatch Uses Big Second Hand", defaultValue: true },
     { type: "submit", defaultValue: "Save Settings" }
 ];

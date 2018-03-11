@@ -25,9 +25,9 @@ static GRect  inner_bounds;     /* relative to inner layers */
 static GPoint center;           /* relative to inner layers */
 
 /* stopwatch complications */
-/* 1 = chronograph 1/10s of a second */
-/* 2 = time of day seconds (big hand seconds is for the chronograph) */
-/* 3 = chronograph minute/hour */
+/* 1 = stopwatch 1/10s of a second */
+/* 2 = time of day seconds (big hand seconds is for the stopwatch) */
+/* 3 = stopwatch minute/hour */
 static GPoint center1, center2, center3;
 static int    radius1, radius2, radius3;
 
@@ -39,7 +39,7 @@ typedef struct DressWatchSettings {
     bool show_battery;
     bool use_bold_font;
     bool use_larger_font;
-    bool chronograph_big_second_hand;
+    bool stopwatch_uses_big_second_hand;
 } DressWatchSettings;
 
 static DressWatchSettings settings;
@@ -92,7 +92,7 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
 
     GPoint second, minute, hour;
 
-    if (settings.chronograph_big_second_hand) {
+    if (settings.stopwatch_uses_big_second_hand) {
         second = tick_angle_point(center2, radius2 - 4, second_angle);
     } else {
         second = tick_angle_point(center, SECOND_RADIUS, second_angle);
@@ -104,7 +104,7 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
     graphics_context_set_fill_color(ctx, GColorWhite);
   
     graphics_context_set_stroke_width(ctx, 1);
-    if (settings.chronograph_big_second_hand) {
+    if (settings.stopwatch_uses_big_second_hand) {
         graphics_draw_line(ctx, center2, second);
     } else {
         graphics_draw_line(ctx, center, second);
@@ -133,7 +133,7 @@ void stopwatch_update_proc(Layer *layer, GContext *ctx) {
     graphics_context_set_fill_color(ctx, GColorWhite);
 
     pt_msec   = tick_point(center1, radius1 - 4, 360.0 * t.msec / 1000);
-    if (settings.chronograph_big_second_hand) {
+    if (settings.stopwatch_uses_big_second_hand) {
         pt_second = tick_point(center, SECOND_RADIUS - 4, t.sec % 60 * 6);
     } else {
         pt_second = tick_point(center2, radius2 - 4, t.sec % 60 * 6);
@@ -143,7 +143,7 @@ void stopwatch_update_proc(Layer *layer, GContext *ctx) {
 
     graphics_context_set_stroke_width(ctx, 1);
     graphics_draw_line(ctx, center1, pt_msec);
-    if (settings.chronograph_big_second_hand) {
+    if (settings.stopwatch_uses_big_second_hand) {
         graphics_draw_line(ctx, center, pt_second);
     } else {
         graphics_draw_line(ctx, center2, pt_second);
@@ -178,11 +178,11 @@ static void on_battery_state_change(BatteryChargeState charge) {
 
 static void message_handler(DictionaryIterator *received, void *context) {
     bool refresh_window = 0;
-    Tuple *tuple_show_date                   = dict_find(received, MESSAGE_KEY_ShowDate);
-    Tuple *tuple_show_battery                = dict_find(received, MESSAGE_KEY_ShowBattery);
-    Tuple *tuple_use_bold_font               = dict_find(received, MESSAGE_KEY_UseBoldFont);
-    Tuple *tuple_use_larger_font             = dict_find(received, MESSAGE_KEY_UseLargerFont);
-    Tuple *tuple_chronograph_big_second_hand = dict_find(received, MESSAGE_KEY_ChronographBigSecondHand);
+    Tuple *tuple_show_date                      = dict_find(received, MESSAGE_KEY_ShowDate);
+    Tuple *tuple_show_battery                   = dict_find(received, MESSAGE_KEY_ShowBattery);
+    Tuple *tuple_use_bold_font                  = dict_find(received, MESSAGE_KEY_UseBoldFont);
+    Tuple *tuple_use_larger_font                = dict_find(received, MESSAGE_KEY_UseLargerFont);
+    Tuple *tuple_stopwatch_uses_big_second_hand = dict_find(received, MESSAGE_KEY_StopwatchUsesBigSecondHand);
 
     if (tuple_show_date) {
         refresh_window = 1;
@@ -200,9 +200,9 @@ static void message_handler(DictionaryIterator *received, void *context) {
         refresh_window = 1;
         settings.use_larger_font = (bool)tuple_use_larger_font->value->int32;
     }
-    if (tuple_chronograph_big_second_hand) {
+    if (tuple_stopwatch_uses_big_second_hand) {
         refresh_window = 1;
-        settings.chronograph_big_second_hand = (bool)tuple_chronograph_big_second_hand->value->int32;
+        settings.stopwatch_uses_big_second_hand = (bool)tuple_stopwatch_uses_big_second_hand->value->int32;
     }
 
     persist_write_data(SETTINGS_KEY, &settings, sizeof(settings));
@@ -222,7 +222,7 @@ static void main_window_load(Window *window) {
     settings.show_battery = 0;
     settings.use_bold_font = 0;
     settings.use_larger_font = 0;
-    settings.chronograph_big_second_hand = 1;
+    settings.stopwatch_uses_big_second_hand = 1;
 
     persist_read_data(SETTINGS_KEY, &settings, sizeof(settings));
 
