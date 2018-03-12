@@ -5,7 +5,7 @@
  */
 
 #include <pebble.h>
-#include "analog-watchface.h"
+#include "watch.h"
 
 static StopwatchData stopwatch_data;
 
