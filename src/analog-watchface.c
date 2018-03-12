@@ -13,14 +13,15 @@ static GFont s_font;
 
 static int minute_when_last_updated;
 
-#define TICK_RADIUS       68
-#define SECOND_RADIUS     64
+#define TICK_RADIUS       70
+#define SECOND_RADIUS     68
 #define MINUTE_RADIUS     56
 #define HOUR_RADIUS       36
 
 static AppTimer *timer_handle = NULL;
 
-static GRect  bounds;           /* relative to window */
+static GRect  window_bounds;
+static GRect  watch_bounds;
 static GRect  inner_bounds;     /* relative to inner layers */
 static GPoint center;           /* relative to inner layers */
 
@@ -34,15 +35,15 @@ static int    radius1, radius2, radius3;
 /* Persistent storage key */
 #define SETTINGS_KEY 1
 
-typedef struct DressWatchSettings {
+typedef struct WatchSettings {
     bool show_date;
     bool show_battery;
     bool use_bold_font;
     bool use_larger_font;
     bool stopwatch_uses_big_second_hand;
-} DressWatchSettings;
+} WatchSettings;
 
-static DressWatchSettings settings;
+static WatchSettings settings;
 
 GPoint tick_angle_point(GPoint center, int radius, int angle) {
     int x = center.x + (int)(radius * 1.0 * sin_lookup(angle) / TRIG_MAX_RATIO + 0.5);
@@ -51,7 +52,7 @@ GPoint tick_angle_point(GPoint center, int radius, int angle) {
 }
 
 GPoint tick_point(GPoint center, int radius, int degrees) {
-    int angle = (int)(TRIG_MAX_ANGLE * degrees / 360.0 + 0.5);
+    int angle = DEG_TO_TRIGANGLE(degrees);
     return tick_angle_point(center, radius, angle);
 }
 
@@ -226,21 +227,23 @@ static void main_window_load(Window *window) {
 
     persist_read_data(SETTINGS_KEY, &settings, sizeof(settings));
 
-    bounds = layer_get_bounds(window_layer);
+    window_bounds = layer_get_bounds(window_layer);
+
+    watch_bounds = window_bounds;
+    watch_bounds.size.h = TICK_RADIUS * 2 + 3;
+    watch_bounds.origin.y = window_bounds.size.h / 2 - (watch_bounds.size.h + 1) / 2;
+    
     if (settings.show_date || settings.show_battery) {
         if (settings.use_larger_font) {
-            bounds.origin.y += 23; /* for font size = 18 */
+            watch_bounds.origin.y += 18 / 2;
         } else {
-            bounds.origin.y += 21; /* for font size = 14 */
+            watch_bounds.origin.y += 14 / 2;
         }
-    } else {
-        bounds.origin.y += 14;
     }
-    bounds.size.h -= 28;
 
     window_set_background_color(window, GColorBlack);
 
-    s_ticks_layer = layer_create(bounds);
+    s_ticks_layer = layer_create(watch_bounds);
     layer_set_update_proc(s_ticks_layer, ticks_update_proc);
     layer_add_child(window_layer, s_ticks_layer);
 
@@ -254,7 +257,7 @@ static void main_window_load(Window *window) {
     radius2 = 20;
     radius3 = 30;
 
-    s_wall_time_layer = layer_create(bounds);
+    s_wall_time_layer = layer_create(watch_bounds);
     layer_set_update_proc(s_wall_time_layer, canvas_update_proc);
     layer_add_child(window_layer, s_wall_time_layer);
 
@@ -295,7 +298,7 @@ static void main_window_load(Window *window) {
 
     minute_when_last_updated = -1;
 
-    s_stopwatch_layer = layer_create(bounds);
+    s_stopwatch_layer = layer_create(watch_bounds);
     layer_set_update_proc(s_stopwatch_layer, stopwatch_update_proc);
     layer_add_child(window_layer, s_stopwatch_layer);
 
