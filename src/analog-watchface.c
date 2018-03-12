@@ -32,17 +32,6 @@ static GPoint center;           /* relative to inner layers */
 static GPoint center1, center2, center3;
 static int    radius1, radius2, radius3;
 
-/* Persistent storage key */
-#define SETTINGS_KEY 1
-
-typedef struct WatchSettings {
-    bool show_date;
-    bool show_battery;
-    bool use_bold_font;
-    bool use_larger_font;
-    bool stopwatch_uses_big_second_hand;
-} WatchSettings;
-
 static WatchSettings settings;
 
 GPoint tick_angle_point(GPoint center, int radius, int angle) {

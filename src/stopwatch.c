@@ -7,14 +7,6 @@
 #include <pebble.h>
 #include "analog-watchface.h"
 
-#define STOPWATCH_DATA_KEY 2
-
-typedef struct StopwatchData {
-    TimeWithMsec start_time;
-    TimeWithMsec stop_time;
-    bool is_running;
-} StopwatchData;
-
 static StopwatchData stopwatch_data;
 
 int stopwatch_load_persist() {
